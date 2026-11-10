@@ -52,7 +52,7 @@ function Index() {
       </header>
 
       <section id="top" className="relative overflow-hidden bg-hero px-5 pb-20 pt-12 text-center">
-        <img src={crown.url} alt="Corona Crown Club" className="animate-float mx-auto w-64 drop-shadow-[0_10px_40px_rgba(255,0,45,0.35)] md:w-80" />
+        <img src="/crown_isotipo.png" alt="Corona Crown Club" className="animate-float mx-auto w-64 drop-shadow-[0_10px_40px_rgba(255,0,45,0.35)] md:w-80" />
         <h1 className="mt-6 font-display text-5xl font-extrabold md:text-7xl">
           ELEVA TU <span className="text-primary text-glow">ESTILO</span>
         </h1>
