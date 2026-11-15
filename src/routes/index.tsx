@@ -31,7 +31,6 @@ type Product = {
   stock?: number;
 };
 
-// Mapeo de las imágenes locales con los nombres de producto de la base de datos
 const IMAGE_MAP: Record<string, string> = {
   "Royal Snapback": capBlack,
   "Red Trucker": capRed,
@@ -186,6 +185,9 @@ function Index() {
       </footer>
 
       {selected && <ProductModal product={selected} onClose={() => setSelected(null)} />}
+
+      {/* Asistente virtual Dani */}
+      <DaniChatbot products={products} />
     </div>
   );
 }
@@ -242,6 +244,111 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function DaniChatbot({ products }: { products: Product[] }) {
+  const [open, setOpen] = useState(false);
+  const [messages, setMessages] = useState<{ from: "bot" | "user"; text: string }[]>([
+    { from: "bot", text: "¡Hola! 👑 Soy Dani, tu asistente de Crown Club. ¿En qué te puedo ayudar hoy?" },
+  ]);
+
+  const handleQuestion = (question: string, type: "catalogo" | "envios" | "ubicacion") => {
+    let reply = "";
+
+    if (type === "catalogo") {
+      if (products.length === 0) {
+        reply = "Estoy actualizando el catálogo desde la base de datos. ¡Probá en unos segundos!";
+      } else {
+        const lista = products
+          .map((p) => `• ${p.name}: $${p.price?.toLocaleString("es-AR")} (${p.stock} u. disponibles)`)
+          .join("\n");
+        reply = `Estas son nuestras gorras en stock ahora mismo:\n\n${lista}\n\nTocá cualquier gorra en el catálogo para reservarla.`;
+      }
+    } else if (type === "envios") {
+      reply = "Hacemos envíos a todo el país por correo y entregas coordinadas sin cargo en puntos de encuentro de Rosario.";
+    } else if (type === "ubicacion") {
+      reply = "Nacimos en Rosario, Santa Fe 🇦🇷. Podés coordinar retiro en persona o pedir envío a domicilio.";
+    }
+
+    setMessages((prev) => [...prev, { from: "user", text: question }, { from: "bot", text: reply }]);
+  };
+
+  return (
+    <div className="fixed bottom-5 right-5 z-40 flex flex-col items-end">
+      {open && (
+        <div className="mb-3 flex w-80 flex-col overflow-hidden rounded-3xl border border-border bg-card shadow-2xl sm:w-96">
+          <div className="flex items-center justify-between bg-primary px-4 py-3 text-primary-foreground">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">👑</span>
+              <div>
+                <p className="font-display text-sm font-bold leading-none">Dani · Crown Club</p>
+                <span className="text-[11px] opacity-90">Asistente virtual en línea</span>
+              </div>
+            </div>
+            <button onClick={() => setOpen(false)} aria-label="Cerrar chat" className="text-xl leading-none hover:opacity-80">
+              ×
+            </button>
+          </div>
+
+          <div className="flex max-h-72 flex-col gap-2.5 overflow-y-auto p-4 text-sm">
+            {messages.map((m, i) => (
+              <div
+                key={i}
+                className={`whitespace-pre-line rounded-2xl px-3.5 py-2.5 ${
+                  m.from === "bot"
+                    ? "self-start bg-muted text-foreground"
+                    : "self-end bg-primary text-primary-foreground"
+                }`}
+              >
+                {m.text}
+              </div>
+            ))}
+          </div>
+
+          <div className="flex flex-col gap-1.5 border-t border-border bg-background/60 p-3">
+            <p className="px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Consultas rápidas:
+            </p>
+            <button
+              onClick={() => handleQuestion("¿Qué gorras tienen y cuánto salen?", "catalogo")}
+              className="rounded-xl border border-border bg-card px-3 py-2 text-left text-xs font-medium transition hover:border-primary hover:text-primary"
+            >
+              🧢 ¿Qué gorras tienen y cuánto salen?
+            </button>
+            <button
+              onClick={() => handleQuestion("¿Cómo son los envíos?", "envios")}
+              className="rounded-xl border border-border bg-card px-3 py-2 text-left text-xs font-medium transition hover:border-primary hover:text-primary"
+            >
+              🚚 ¿Cómo son los envíos?
+            </button>
+            <button
+              onClick={() => handleQuestion("¿Dónde están ubicados?", "ubicacion")}
+              className="rounded-xl border border-border bg-card px-3 py-2 text-left text-xs font-medium transition hover:border-primary hover:text-primary"
+            >
+              📍 ¿Dónde están ubicados?
+            </button>
+            <a
+              href={waLink("¡Hola Dani! Vengo desde la web de Crown Club y quiero hacer una consulta 👑")}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 rounded-xl bg-primary py-2 text-center text-xs font-bold uppercase text-primary-foreground transition hover:bg-primary-glow"
+            >
+              Hablar por WhatsApp →
+            </a>
+          </div>
+        </div>
+      )}
+
+      <button
+        onClick={() => setOpen(!open)}
+        aria-label="Abrir asistente virtual Dani"
+        className="flex items-center gap-2 rounded-full bg-primary px-5 py-3.5 font-display text-sm font-bold uppercase tracking-wider text-primary-foreground shadow-glow transition hover:scale-105 hover:bg-primary-glow"
+      >
+        <span className="text-lg">👑</span>
+        <span>{open ? "Cerrar" : "Consultale a Dani"}</span>
+      </button>
     </div>
   );
 }
