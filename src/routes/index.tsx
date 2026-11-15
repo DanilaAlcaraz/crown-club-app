@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
 });
 
 // TODO: reemplazar por el número real de WhatsApp (formato internacional sin +)
-const WHATSAPP = "5493410000000";
+const WHATSAPP = "5493413166223";
 const API_URL = "https://api-crownclub.vercel.app/productos";
 
 type Product = {
@@ -174,9 +174,9 @@ function Index() {
           ))}
         </ol>
         <div className="mt-12 text-center">
-          <a href={waLink("¡Hola Crown Club! Quiero consultar por stock y envío 👑")} target="_blank" rel="noreferrer" className="inline-block rounded-full bg-primary px-10 py-4 font-bold uppercase text-primary-foreground shadow-glow transition hover:scale-105">
-            Consultar ahora
-          </a>
+        <a href={waLink("¡Hola! Me contacto desde la página web de Crown Club App para consultar por stock y envío.")} target="_blank" rel="noreferrer" className="inline-block rounded-full bg-primary px-10 py-4 font-bold uppercase text-primary-foreground shadow-glow transition hover:scale-105">
+  Consultar ahora
+</a>
         </div>
       </section>
 
@@ -329,14 +329,14 @@ function DaniChatbot({ products }: { products: Product[] }) {
             >
               📍 ¿Dónde están ubicados?
             </button>
-            <a
-              href={waLink("¡Hola Dani! Vengo desde la web de Crown Club y quiero hacer una consulta 👑")}
-              target="_blank"
-              rel="noreferrer"
-              className="mt-1 rounded-xl bg-primary py-2 text-center text-xs font-bold uppercase text-primary-foreground transition hover:bg-primary-glow"
-            >
-              Hablar por WhatsApp →
-            </a>
+           <a
+  href={waLink("¡Hola Dani! Me contacto desde la página web de Crown Club App y quiero hacer una consulta.")}
+  target="_blank"
+  rel="noreferrer"
+  className="mt-1 rounded-xl bg-primary py-2 text-center text-xs font-bold uppercase text-primary-foreground transition hover:bg-primary-glow"
+>
+  Hablar por WhatsApp →
+</a>
           </div>
         </div>
       )}
