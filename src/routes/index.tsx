@@ -1,6 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import crown from "@/assets/corona_crown_club.png.asset.json";
+import { useState, useEffect } from "react";
 import capBlack from "@/assets/cap_black.jpg";
 import capRed from "@/assets/cap_red.jpg";
 import capWhite from "@/assets/cap_white.jpg";
@@ -19,21 +18,59 @@ export const Route = createFileRoute("/")({
 
 // TODO: reemplazar por el número real de WhatsApp (formato internacional sin +)
 const WHATSAPP = "5493410000000";
+const API_URL = "https://api-crownclub.vercel.app/productos";
 
-type Product = { id: string; name: string; tag: string; desc: string; img: string; colors: string[] };
+type Product = {
+  id: string;
+  name: string;
+  tag: string;
+  desc: string;
+  img: string;
+  colors: string[];
+  price?: number;
+  stock?: number;
+};
 
-const PRODUCTS: Product[] = [
-  { id: "royal", name: "Royal Snapback", tag: "Más vendida", desc: "Visera plana, corona bordada en relieve y cierre ajustable. La clásica del club.", img: capBlack, colors: ["Negro", "Rojo"] },
-  { id: "trucker", name: "Red Trucker", tag: "Nuevo drop", desc: "Frente de gabardina y malla trasera respirable. Ideal para el verano.", img: capRed, colors: ["Rojo/Negro"] },
-  { id: "dad", name: "Clean Dad Hat", tag: "Edición limitada", desc: "Visera curva, algodón lavado y caída suave. Minimal y fácil de combinar.", img: capWhite, colors: ["Crudo"] },
-];
+// Mapeo de las imágenes locales con los nombres de producto de la base de datos
+const IMAGE_MAP: Record<string, string> = {
+  "Royal Snapback": capBlack,
+  "Red Trucker": capRed,
+  "Clean Dad Hat": capWhite,
+};
 
 function waLink(text: string) {
   return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(text)}`;
 }
 
 function Index() {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Product | null>(null);
+
+  useEffect(() => {
+    fetch(API_URL)
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          const mappedProducts: Product[] = data.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            desc: item.description,
+            price: item.price,
+            stock: item.stock,
+            tag: item.stock <= 5 ? "¡Últimas unidades!" : "En stock",
+            img: IMAGE_MAP[item.name] || capBlack,
+            colors: item.name === "Royal Snapback" ? ["Negro", "Rojo"] : item.name === "Red Trucker" ? ["Rojo/Negro"] : ["Crudo"],
+          }));
+          setProducts(mappedProducts);
+        }
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error cargando productos desde la API:", err);
+        setLoading(false);
+      });
+  }, []);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -90,21 +127,40 @@ function Index() {
       <section id="catalogo" className="mx-auto max-w-6xl px-5 py-20">
         <h2 className="text-center font-display text-3xl font-bold md:text-4xl">Catálogo</h2>
         <p className="mt-3 text-center text-muted-foreground">Tocá una gorra para ver detalles y consultar.</p>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {PRODUCTS.map((p) => (
-            <button key={p.id} onClick={() => setSelected(p)} className="group overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:-translate-y-1 hover:border-primary hover:shadow-glow">
-              <div className="relative aspect-square overflow-hidden">
-                <img src={p.img} alt={p.name} loading="lazy" width={816} height={816} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
-                <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase text-primary-foreground">{p.tag}</span>
-              </div>
-              <div className="p-5">
-                <h3 className="font-display text-xl font-bold">{p.name}</h3>
-                <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.desc}</p>
-                <span className="mt-4 inline-block text-sm font-bold uppercase text-primary">Ver más →</span>
-              </div>
-            </button>
-          ))}
-        </div>
+
+        {loading ? (
+          <div className="mt-12 text-center text-muted-foreground animate-pulse">
+            Cargando catálogo desde la base de datos...
+          </div>
+        ) : (
+          <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {products.map((p) => (
+              <button key={p.id} onClick={() => setSelected(p)} className="group overflow-hidden rounded-3xl border border-border bg-card text-left transition hover:-translate-y-1 hover:border-primary hover:shadow-glow">
+                <div className="relative aspect-square overflow-hidden">
+                  <img src={p.img} alt={p.name} loading="lazy" width={816} height={816} className="h-full w-full object-cover transition duration-500 group-hover:scale-110" />
+                  <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase text-primary-foreground">{p.tag}</span>
+                </div>
+                <div className="p-5">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-display text-xl font-bold">{p.name}</h3>
+                    {p.price && (
+                      <span className="font-display text-lg font-extrabold text-primary">
+                        ${p.price.toLocaleString("es-AR")}
+                      </span>
+                    )}
+                  </div>
+                  <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{p.desc}</p>
+                  <div className="mt-4 flex items-center justify-between">
+                    <span className="text-sm font-bold uppercase text-primary">Ver más →</span>
+                    {p.stock !== undefined && (
+                      <span className="text-xs text-muted-foreground">Stock: {p.stock} u.</span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
       </section>
 
       <section id="envios" className="mx-auto max-w-4xl px-5 py-20">
@@ -138,7 +194,7 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
   const [color, setColor] = useState(product.colors[0]);
   const [envio, setEnvio] = useState("Envío a domicilio");
   const [ciudad, setCiudad] = useState("");
-  const msg = `¡Hola Crown Club! 👑 Quiero consultar por la gorra *${product.name}* (${color}).\n¿Hay stock?\nForma de entrega: ${envio}${ciudad ? `\nCiudad: ${ciudad}` : ""}`;
+  const msg = `¡Hola Crown Club! 👑 Quiero consultar por la gorra *${product.name}* (${color})${product.price ? ` - $${product.price.toLocaleString("es-AR")}` : ""}.\n¿Hay stock?\nForma de entrega: ${envio}${ciudad ? `\nCiudad: ${ciudad}` : ""}`;
 
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-background/80 p-0 backdrop-blur sm:items-center sm:p-5" onClick={onClose}>
@@ -150,8 +206,18 @@ function ProductModal({ product, onClose }: { product: Product; onClose: () => v
               <span className="rounded-full bg-primary px-3 py-1 text-xs font-bold uppercase text-primary-foreground">{product.tag}</span>
               <button onClick={onClose} aria-label="Cerrar" className="text-2xl leading-none text-muted-foreground hover:text-foreground">×</button>
             </div>
-            <h3 className="mt-4 font-display text-2xl font-bold">{product.name}</h3>
+            <div className="mt-4 flex items-baseline justify-between">
+              <h3 className="font-display text-2xl font-bold">{product.name}</h3>
+              {product.price && (
+                <span className="font-display text-xl font-extrabold text-primary">
+                  ${product.price.toLocaleString("es-AR")}
+                </span>
+              )}
+            </div>
             <p className="mt-2 text-sm text-muted-foreground">{product.desc}</p>
+            {product.stock !== undefined && (
+              <p className="mt-2 text-xs font-semibold text-primary">Disponibles: {product.stock} unidades</p>
+            )}
 
             <label className="mt-5 text-xs font-bold uppercase tracking-wider">Color</label>
             <div className="mt-2 flex flex-wrap gap-2">
