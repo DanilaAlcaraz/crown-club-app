@@ -35,6 +35,8 @@ const IMAGE_MAP: Record<string, string> = {
   "Royal Snapback": capBlack,
   "Red Trucker": capRed,
   "Clean Dad Hat": capWhite,
+  "Alligator Black": "/lacoste.jpeg",
+  "MAGO": "/mago.jpeg",
 };
 
 function waLink(text: string) {
@@ -59,7 +61,15 @@ function Index() {
             stock: item.stock,
             tag: item.stock <= 5 ? "¡Últimas unidades!" : "En stock",
             img: IMAGE_MAP[item.name] || capBlack,
-            colors: item.name === "Royal Snapback" ? ["Negro", "Rojo"] : item.name === "Red Trucker" ? ["Rojo/Negro"] : ["Crudo"],
+            colors: item.name === "Royal Snapback"
+                                                  ? ["Negro", "Rojo"]
+                                                  : item.name === "Red Trucker"
+                                                  ? ["Rojo/Negro"]
+                                                  : item.name === "MAGO"
+                                                  ? ["Negro/Blanco"]
+                                                  : item.name === "Alligator Black"
+                                                  ? ["Negro"]
+                                                  : ["Crudo"],
           }));
           setProducts(mappedProducts);
         }
